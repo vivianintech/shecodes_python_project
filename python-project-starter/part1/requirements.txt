@@ -1,0 +1,5 @@
+A summary of the forecast including:
+    The overall min temperature, and the date this will occur
+    The overall max temperature, and the date this will occur
+    The mean minimum temperature
+    The mean maximum temperature
