@@ -57,12 +57,15 @@ def process_weather(forecast_file):
     minDate = dataSet["DailyForecasts"][0]["Date"]
     maxTemp = dataSet["DailyForecasts"][0]["Temperature"]["Maximum"]["Value"]
     maxDate = dataSet["DailyForecasts"][0]["Date"]
+    totalMinTemp = 0
+    totalMaxTemp = 0
 
     # retrieve data for the first paragraph
     for dataSubSet in dataSet["DailyForecasts"]:
         # retrieve lowest temperature and date throughout 8 days forecast
         minTempValues = dataSubSet["Temperature"]["Minimum"]["Value"]
         minDateValues = dataSubSet["Date"]
+        totalMinTemp += minTempValues
         if minTempValues < minTemp:
             minTemp = minTempValues
             minDate = minDateValues
@@ -71,6 +74,7 @@ def process_weather(forecast_file):
         # retrieve highest temperature and date through out 8 days forecast
         maxTempValues = dataSubSet["Temperature"]["Maximum"]["Value"]
         maxDateValues = dataSubSet["Date"]
+        totalMaxTemp += maxTempValues
         if maxTempValues > maxTemp:
             maxTemp = maxTempValues
             maxDate = maxDateValues
@@ -80,11 +84,13 @@ def process_weather(forecast_file):
     dateTimeMinFormat = convert_date(minDate)
     dateTimeMaxFormat = convert_date(maxDate)
     lenDataSet = len(dataSet["DailyForecasts"])
+    meanMinTemp = format_temperature(convert_f_to_c(calculate_mean(totalMinTemp, lenDataSet)))
+    meanMaxTemp = format_temperature(convert_f_to_c(calculate_mean(totalMaxTemp, lenDataSet)))
     print(f"{lenDataSet} Day Overview")
     print(f"    The lowest temperature will be {minTempCelsius}, and will occur on {dateTimeMinFormat}.")
     print(f"    The highest temperature will be {maxTempCelsius}, and will occur on {dateTimeMaxFormat}.")
-    print(f"    The average low this week is {minTempCelsius}.")
-    print(f"    The average high this week is {maxTempCelsius}.")
+    print(f"    The average low this week is {meanMinTemp}.")
+    print(f"    The average high this week is {meanMaxTemp}.")
 
     # retrieve data for the remaining paragraphs
     for dataSubSet in dataSet["DailyForecasts"]:

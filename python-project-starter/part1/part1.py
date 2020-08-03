@@ -62,16 +62,20 @@ def process_weather(forecast_file):
     with open(forecast_file) as json_file:
         dataSet = json.load(json_file)
     
+    output = ""
     minTemp = dataSet["DailyForecasts"][0]["Temperature"]["Minimum"]["Value"]
     minDate = dataSet["DailyForecasts"][0]["Date"]
     maxTemp = dataSet["DailyForecasts"][0]["Temperature"]["Maximum"]["Value"]
     maxDate = dataSet["DailyForecasts"][0]["Date"]
+    totalMinTemp = 0
+    totalMaxTemp = 0
 
     # retrieve data for the first paragraph
     for dataSubSet in dataSet["DailyForecasts"]:
         # retrieve lowest temperature and date throughout 8 days forecast
         minTempValues = dataSubSet["Temperature"]["Minimum"]["Value"]
         minDateValues = dataSubSet["Date"]
+        totalMinTemp += minTempValues
         if minTempValues < minTemp:
             minTemp = minTempValues
             minDate = minDateValues
@@ -80,6 +84,7 @@ def process_weather(forecast_file):
         # retrieve highest temperature and date through out 8 days forecast
         maxTempValues = dataSubSet["Temperature"]["Maximum"]["Value"]
         maxDateValues = dataSubSet["Date"]
+        totalMaxTemp += maxTempValues
         if maxTempValues > maxTemp:
             maxTemp = maxTempValues
             maxDate = maxDateValues
@@ -89,11 +94,13 @@ def process_weather(forecast_file):
     dateTimeMinFormat = convert_date(minDate)
     dateTimeMaxFormat = convert_date(maxDate)
     lenDataSet = len(dataSet["DailyForecasts"])
-    print(f"{lenDataSet} Day Overview")
-    print(f"    The lowest temperature will be {minTempCelsius}, and will occur on {dateTimeMinFormat}.")
-    print(f"    The highest temperature will be {maxTempCelsius}, and will occur on {dateTimeMaxFormat}.")
-    print(f"    The average low this week is {minTempCelsius}.")
-    print(f"    The average high this week is {maxTempCelsius}.")
+    meanMinTemp = format_temperature(convert_f_to_c(calculate_mean(totalMinTemp, lenDataSet)))
+    meanMaxTemp = format_temperature(convert_f_to_c(calculate_mean(totalMaxTemp, lenDataSet)))
+    output += f"{lenDataSet} Day Overview\n"
+    output += f"    The lowest temperature will be {minTempCelsius}, and will occur on {dateTimeMinFormat}.\n"
+    output += f"    The highest temperature will be {maxTempCelsius}, and will occur on {dateTimeMaxFormat}.\n"
+    output += f"    The average low this week is {meanMinTemp}.\n"
+    output += f"    The average high this week is {meanMaxTemp}.\n"
 
     # retrieve data for the remaining paragraphs
     for dataSubSet in dataSet["DailyForecasts"]:
@@ -102,27 +109,29 @@ def process_weather(forecast_file):
         
         # Day
         dateData = convert_date(dataSubSet["Date"])
-        print(f"\n--------{dateData}--------")
+        output += f"\n-------- {dateData} --------\n"
 
         # Temperature
-        print(f"Minimum Temperature: {minTempValues}")
-        print(f"Maximum Temperature: {maxTempValues}")
+        output += f"Minimum Temperature: {minTempValues}\n"
+        output += f"Maximum Temperature: {maxTempValues}\n"
         
         # Daytime
         dayTimeData = dataSubSet["Day"]["LongPhrase"]
-        print(f"Daytime: {dayTimeData}")
+        output += f"Daytime: {dayTimeData}\n"
 
         # Chance of rain
         rainDayProbability = dataSubSet["Day"]["RainProbability"]
-        print(f"    Chance of rain:  {rainDayProbability}%")
+        output += f"    Chance of rain:  {rainDayProbability}%\n"
 
         # Night time
         nightTimeData = dataSubSet["Night"]["LongPhrase"]
-        print(f"Nighttime: {nightTimeData}")
+        output += f"Nighttime: {nightTimeData}\n"
 
         # Chance of rain
         rainNightProbability = dataSubSet["Night"]["RainProbability"]
-        print(f"    Chance of rain:  {rainNightProbability}%")
+        output += f"    Chance of rain:  {rainNightProbability}%\n"
+    output += "\n"
+    return output
 
 if __name__ == "__main__":
     print(process_weather("data/forecast_5days_a.json"))
