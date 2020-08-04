@@ -32,14 +32,22 @@ for filePath in filePaths:
     dateList = []
     minTempList = []
     maxTempList = []
+    numDays = 0
+    minRealFeels = []
+    minRealShades = []
 
     for dailyForecasts in dataSet["DailyForecasts"]:
         date = convert_date(dailyForecasts["Date"])
-        minTemp = format_temperature(convert_f_to_c(dailyForecasts["Temperature"]["Minimum"]["Value"]))
-        maxTemp = format_temperature(convert_f_to_c(dailyForecasts["Temperature"]["Maximum"]["Value"]))
+        minTemp = convert_f_to_c(dailyForecasts["Temperature"]["Minimum"]["Value"])
+        maxTemp = convert_f_to_c(dailyForecasts["Temperature"]["Maximum"]["Value"])
         dateList.append(date)
         minTempList.append(minTemp)
         maxTempList.append(maxTemp)
+        numDays += 1
+        minRealFeel = convert_f_to_c(dailyForecasts["RealFeelTemperature"]["Minimum"]["Value"])
+        minRealFeels.append(minRealFeel)
+        minRealShade = convert_f_to_c(dailyForecasts["RealFeelTemperatureShade"]["Minimum"]["Value"])
+        minRealShades.append(minRealShade)
 
     df = {
         "Minimum Temperature": minTempList,
@@ -50,6 +58,30 @@ for filePath in filePaths:
     fig = px.line(
         df,
         x = "Date",
-        y = ["Minimum Temperature", "Maximum Temperature"]
+        y = ["Minimum Temperature", "Maximum Temperature"],
+        title= f"Daily Forecast for {numDays} days from {dateList[0]} to {dateList[-1]}"
+    )
+
+    fig.update_layout(
+        yaxis_title="Temperature (°C)"
     )
     fig.show()
+
+    df1 = {
+        "Minimum Temperature": minTempList,
+        "Minimum Real Feel Temperature": minRealFeels,
+        "Minimum Real Feel Temperature Shade": minRealShades,
+        "Date": dateList
+    }
+    fig1 = px.line(
+        df1,
+        x = "Date",
+        y = ["Minimum Temperature", "Minimum Real Feel Temperature", "Minimum Real Feel Temperature Shade"],
+        title=f"Daily Forecast for {numDays} days from {dateList[0]} to {dateList[-1]}"
+    )
+
+    fig1.update_layout(
+        yaxis_title="Temperature (°C)"
+    )
+    fig1.show()
+    
