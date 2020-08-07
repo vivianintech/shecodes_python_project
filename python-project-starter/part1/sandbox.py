@@ -5,6 +5,7 @@ DEGREE_SYBMOL = u"\N{DEGREE SIGN}C"
 
 def format_temperature(temp):
     """Takes a temperature and returns it in string format with the degrees and celcius symbols.
+    
     Args:
         temp: A string representing a temperature.
     Returns:
@@ -14,6 +15,7 @@ def format_temperature(temp):
 
 def convert_date(iso_string):
     """Converts and ISO formatted date into a human readable format.
+  
     Args:
         iso_string: An ISO date string..
     Returns:
@@ -21,9 +23,11 @@ def convert_date(iso_string):
     """
     d = datetime.strptime(iso_string, "%Y-%m-%dT%H:%M:%S%z")
     return d.strftime("%A %d %B %Y")
-    
+
+
 def convert_f_to_c(temp_in_farenheit):
     """Converts an temperature from farenheit to celcius
+
     Args:
         temp_in_farenheit: integer representing a temperature.
     Returns:
@@ -36,12 +40,14 @@ def convert_f_to_c(temp_in_farenheit):
     else:
         return round(temp_in_celsius,1)
 
+
 def calculate_mean(total, num_items):
     mean_number = total/num_items
     if total % num_items == 0:
         return mean_number
     else:
         return round(mean_number,1)
+
 
 def process_weather(forecast_file):
     """Converts raw weather data into meaningful text.
@@ -52,48 +58,87 @@ def process_weather(forecast_file):
     Returns:
         A string containing the processed and formatted weather data.
     """
-    with open(forecast_file) as file:
-        data = json.load(file)
+    # load JSON file into Python object
+    with open(forecast_file) as json_file:
+        dataSet = json.load(json_file)
     
-    numberOfDays = 0
-    totalMin = 0 
-    totalMax = 0
-    minTemps = []
-    maxTemps = []
- 
-    for day in data["DailyForecasts"]:
-        numberOfDays +=1
-        date = convert_date(day['Date'])
+    outputBody = ""
+    outputFinal = ""
+    minTemp = dataSet["DailyForecasts"][0]["Temperature"]["Minimum"]["Value"]
+    minDate = dataSet["DailyForecasts"][0]["Date"]
+    maxTemp = dataSet["DailyForecasts"][0]["Temperature"]["Maximum"]["Value"]
+    maxDate = dataSet["DailyForecasts"][0]["Date"]
+    totalMinTemp = 0
+    totalMaxTemp = 0
+
+    # retrieve data for the first paragraph
+    for dataSubSet in dataSet["DailyForecasts"]:
+        # retrieve lowest temperature and date throughout n days forecast
+        minTempValues = dataSubSet["Temperature"]["Minimum"]["Value"]
+        minDateValues = dataSubSet["Date"]
+        totalMinTemp += minTempValues
+        if minTempValues < minTemp:
+            minTemp = minTempValues
+            minDate = minDateValues
+        else:
+            None
+
+        # retrieve highest temperature and date through out n days forecast
+        maxTempValues = dataSubSet["Temperature"]["Maximum"]["Value"]
+        maxDateValues = dataSubSet["Date"]
+        totalMaxTemp += maxTempValues
+        if maxTempValues > maxTemp:
+            maxTemp = maxTempValues
+            maxDate = maxDateValues
+        minTempValues = format_temperature(convert_f_to_c(dataSubSet["Temperature"]["Minimum"]["Value"]))
+        maxTempValues = format_temperature(convert_f_to_c(dataSubSet["Temperature"]["Maximum"]["Value"]))
         
-        minTemp = convert_f_to_c(day["Temperature"]["Minimum"]["Value"])
-        minTemps.append(minTemp)
-        lowestTemp = min(minTemps)
-        totalMin = sum(minTemps)
-        avgMin = calculate_mean(totalMin, numberOfDays)
+        # Day
+        dateData = convert_date(dataSubSet["Date"])
+        output = f"\n-------- {dateData} --------\n"
 
-
-        maxTemp = convert_f_to_c(day["Temperature"]["Maximum"]["Value"])
-        maxTemps.append(maxTemp)
-        highestTemp = max(maxTemps)
-        totalMax = sum(maxTemps)
-        avgMax = calculate_mean(totalMax, numberOfDays)
-
-        dayDesc = day["Day"]["LongPhrase"]
-        dayRainProb = day["Day"]["RainProbability"]
-        nightDesc = day["Night"]["LongPhrase"]
-        nightRainProb = day["Night"]["RainProbability"]
+        # Temperature
+        output += f"Minimum Temperature: {minTempValues}\n"
+        output += f"Maximum Temperature: {maxTempValues}\n"
         
-        print()
-        print(f"-------- {date} --------")
-        print(f"Minimum Temperature: {minTemp}")
-        print(f"Maximum Temperature: {maxTemp}")
-        print(f"Daytime: {dayDesc}")
-        print(f"    Chance of rain:  {dayRainProb}%")
-        print(f"Nighttime: {nightDesc}")
-        print(f"    Chance of rain:  {nightRainProb}%")
+        # Daytime
+        dayTimeData = dataSubSet["Day"]["LongPhrase"]
+        output += f"Daytime: {dayTimeData}\n"
 
-    #     printout = "\n" + "-------- " + date + " --------" + "\n" + "Minimum Temperature: " + minTemp + "\n" + "Maximum Temperature: " + maxTemp + "\n" + "Daytime: " + dayDesc + "\n" + "    Chance of rain:  " + dayRainProb + "\n" + "Nighttime: " + nightDesc + "\n" + "    Chance of rain:  " + nightRainProb
-    #     return printout
+        # Chance of rain
+        rainDayProbability = dataSubSet["Day"]["RainProbability"]
+        output += f"    Chance of rain:  {rainDayProbability}%\n"
+
+        # Night time
+        nightTimeData = dataSubSet["Night"]["LongPhrase"]
+        output += f"Nighttime: {nightTimeData}\n"
+
+        # Chance of rain
+        rainNightProbability = dataSubSet["Night"]["RainProbability"]
+        output += f"    Chance of rain:  {rainNightProbability}%\n"
+        
+        outputBody += output
+    
+    minTempCelsius = format_temperature(convert_f_to_c(minTemp))
+    maxTempCelsius = format_temperature(convert_f_to_c(maxTemp))
+    dateTimeMinFormat = convert_date(minDate)
+    dateTimeMaxFormat = convert_date(maxDate)
+    lenDataSet = len(dataSet["DailyForecasts"])
+    meanMinTemp = format_temperature(convert_f_to_c(calculate_mean(totalMinTemp, lenDataSet)))
+    meanMaxTemp = format_temperature(convert_f_to_c(calculate_mean(totalMaxTemp, lenDataSet)))
+    outputHeader = f"{lenDataSet} Day Overview\n"
+    outputHeader += f"    The lowest temperature will be {minTempCelsius}, and will occur on {dateTimeMinFormat}.\n"
+    outputHeader += f"    The highest temperature will be {maxTempCelsius}, and will occur on {dateTimeMaxFormat}.\n"
+    outputHeader += f"    The average low this week is {meanMinTemp}.\n"
+    outputHeader += f"    The average high this week is {meanMaxTemp}.\n"
+    
+    outputFinal = outputHeader + outputBody 
+    return outputFinal
 
 if __name__ == "__main__":
     print(process_weather("data/forecast_5days_a.json"))
+
+
+
+
+

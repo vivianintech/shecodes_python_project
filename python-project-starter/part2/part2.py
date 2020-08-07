@@ -19,15 +19,12 @@ def format_temperature(temp):
 def convert_date(iso_string):
     d = datetime.strptime(iso_string, "%Y-%m-%dT%H:%M:%S%z")
     return d.strftime("%A %d %B %Y")
-    
-with open("data/forecast_5days_a.json") as jsonFile:
-    dataSet = json.load(jsonFile)
 
 filePaths = ["data/forecast_5days_a.json", "data/forecast_5days_b.json", "data/forecast_8days.json"]
 
 for filePath in filePaths:
     with open(filePath) as jsonFile:
-        dataSet = json.load(jsonFile)    
+        dataSet = json.load(jsonFile)
 
     dateList = []
     minTempList = []
