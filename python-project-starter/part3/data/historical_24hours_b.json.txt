@@ -1,0 +1,7 @@
+-------- Data from data/historical_24hours_b.json --------
+Minimum temperature occurred is 7.2°C at 07:55
+Minimum temperature occurred is 17.8°C at 15:55
+Amount of precipitation that fell is 0mm
+The number of daylight hours in the past 24 hours is 10 hours
+The maximum UV index is 3, and was occurred at 13:55
+

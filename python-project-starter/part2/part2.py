@@ -46,6 +46,9 @@ for filePath in filePaths:
         minRealShade = convert_f_to_c(dailyForecasts["RealFeelTemperatureShade"]["Minimum"]["Value"])
         minRealShades.append(minRealShade)
 
+    print(minRealFeels)
+    print(minRealShades)
+
     df = {
         "Minimum Temperature": minTempList,
         "Maximum Temperature": maxTempList,

@@ -105,10 +105,11 @@ for filePath in filePaths:
     outcomes += f"Amount of precipitation that fell is {sumPrecip}mm\n"
     outcomes += f"The number of daylight hours in the past 24 hours is {dayTimeCount} hours\n"
     outcomes += f"The maximum UV index is {maxUV}, and was occurred at {fmHourMaxUV}\n\n"
+    
+    f = open(str(filePath) + ".txt", "w")
+    f.write(outcomes)
 
-    print(outcomes)
-
-    #Graphs 
+    Graphs 
     df = {
         "Temperature": tempList, 
         "Real Temperature": realTempList
